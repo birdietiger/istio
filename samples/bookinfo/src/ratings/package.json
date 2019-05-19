@@ -3,6 +3,7 @@
     "start": "node ratings.js"
   },
   "dependencies": {
+    "appdynamics": "^4.5.12",
     "httpdispatcher": "1.0.0",
     "mongodb": "^2.2.31",
     "mysql": "^2.15.0"

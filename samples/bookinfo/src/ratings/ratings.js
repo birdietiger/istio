@@ -12,6 +12,19 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 
+require("appdynamics").profile({
+ controllerHostName: process.env.APPD_CONTROLLER_HOST,
+ controllerPort: process.env.APPD_CONTROLLER_PORT, 
+ 
+ // If SSL, be sure to enable the next line
+ controllerSslEnabled: true,
+ accountName: process.env.APPD_ACCT_NAME,
+ accountAccessKey: process.env.APPD_ACCESS_KEY,
+ applicationName: 'bookinfo',
+ tierName: 'ratings',
+ nodeName: 'process' // The controller will automatically append the node name with a unique number
+});
+
 var http = require('http')
 var dispatcher = require('httpdispatcher')
 
