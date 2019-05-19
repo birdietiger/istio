@@ -16,21 +16,25 @@
 
 set -o errexit
 
-if [ "$#" -ne 1 ]; then
+if [ -z "$1" ]; then
     echo Missing version parameter
     echo Usage: build_push_update_images.sh \<version\>
     exit 1
 fi
-
 VERSION=$1
 
+REPO=istio
+if [ -n "$2" ]; then
+	REPO=$2
+fi
+
 #Build docker images
-src/build-services.sh "${VERSION}"
+src/build-services.sh "${VERSION}" "${REPO}"
 
 #get all the new image names and tags
 for v in ${VERSION} "latest"
 do
-  IMAGES+=$(docker images -f reference=istio/examples-bookinfo*:"$v" --format "{{.Repository}}:$v")
+  IMAGES+=$(docker images -f reference=$REPO/examples-bookinfo*:"$v" --format "{{.Repository}}:$v")
   IMAGES+=" "
 done
 
@@ -42,4 +46,4 @@ do
 done
 
 #Update image references in the yaml files
-find . -name "*bookinfo*.yaml" -exec sed -i.bak "s/\\(istio\\/examples-bookinfo-.*\\):[[:digit:]]*\\.[[:digit:]]*\\.[[:digit:]]*/\\1:$VERSION/g" {} +
+find . -name "*bookinfo*.yaml" -exec sed -i.bak "s/\\($REPO\\/examples-bookinfo-.*\\):[[:digit:]]*\\(\\.[[:digit:]]*\\(\\.[[:digit:]]*\\)?\\)?/\\1:$VERSION/g" {} +
