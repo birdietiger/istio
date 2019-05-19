@@ -18,7 +18,7 @@ set -o errexit
 
 if [ -z "$1" ]; then
     echo Missing version parameter
-    echo Usage: build_push_update_images.sh \<version\>
+    echo Usage: build_push_update_images.sh \<version\> \<opt. repository\>
     exit 1
 fi
 VERSION=$1
@@ -46,4 +46,4 @@ do
 done
 
 #Update image references in the yaml files
-find . -name "*bookinfo*.yaml" -exec sed -i.bak "s/\\($REPO\\/examples-bookinfo-.*\\):[[:digit:]]*\\(\\.[[:digit:]]*\\(\\.[[:digit:]]*\\)?\\)?/\\1:$VERSION/g" {} +
+find . -name "*bookinfo*.yaml" -exec sed -E -i.bak "s/($REPO|istio)(\/examples-bookinfo-.*):[[:digit:]]*(\.[[:digit:]]*(\.[[:digit:]]*)?)?/$REPO\\2:$VERSION/g" {} +
