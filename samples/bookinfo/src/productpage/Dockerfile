@@ -31,4 +31,4 @@ WORKDIR /opt/microservices
 RUN python -m unittest discover
 CMD touch /opt/microservices/microservice.log && \
     tail -f /opt/microservices/microservice.log & \
-    python productpage.py 9080
+    pyagent run - gunicorn -b 0.0.0.0:9080 productpage:app

@@ -233,6 +233,32 @@ spec:
       - name: productpage
         image: idontwanttoshare/examples-bookinfo-productpage-v1:0.0.6
         imagePullPolicy: IfNotPresent
+        env:
+          - name: APPDYNAMICS_CONTROLLER_HOST_NAME
+            valueFrom:
+              secretKeyRef:
+                name: appd
+                key: APPDYNAMICS_CONTROLLER_HOST_NAME
+          - name: APPDYNAMICS_AGENT_ACCOUNT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: appd
+                key: APPDYNAMICS_AGENT_ACCOUNT_NAME
+          - name: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: appd
+                key: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+          - name: APPDYNAMICS_CONTROLLER_PORT
+            value: "443"
+          - name: APPDYNAMICS_CONTROLLER_SSL_ENABLED
+            value: "true"
+          - name: APPDYNAMICS_AGENT_APPLICATION_NAME
+            value: "bookinfo"
+          - name: APPDYNAMICS_AGENT_TIER_NAME
+            value: "productpage"
+          - name: APPDYNAMICS_AGENT_NODE_NAME
+            value: "process-v1"
         ports:
         - containerPort: 9080
 ---
