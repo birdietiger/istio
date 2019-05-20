@@ -81,3 +81,9 @@ tests/e2e/local/minikube/docker-machine-driver-hyperkit
 tools/istioctl.bash
 # secrets
 *.secret
+# node modules
+node_modules/
+# swap
+*.swp
+# node package lock
+package-lock.json
