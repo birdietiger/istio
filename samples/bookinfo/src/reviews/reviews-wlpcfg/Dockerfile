@@ -17,6 +17,7 @@ FROM websphere-liberty:latest
 ENV SERVERDIRNAME reviews
 
 ADD ./servers/LibertyProjectServer /opt/ibm/wlp/usr/servers/defaultServer/
+ADD appagent /opt/appdynamics/appagent/
 
 RUN /opt/ibm/wlp/bin/installUtility install  --acceptLicense /opt/ibm/wlp/usr/servers/defaultServer/server.xml
 

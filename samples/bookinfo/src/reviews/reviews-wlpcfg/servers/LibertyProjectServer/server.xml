@@ -30,4 +30,6 @@
 
     <webApplication contextRoot="/" id="reviews-app" location="reviews-application-1.0.war" name="reviews-app"/>
 
+    <jvmEntries genericJvmArguments='-javaagent:/opt/appdynamics/appagent/javaagent.jar' disableJIT="false"/>
+
 </server>
