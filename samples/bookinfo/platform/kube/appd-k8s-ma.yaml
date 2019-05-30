@@ -1,0 +1,196 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: appd-cluster-reader
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: appd-cluster-reader
+rules:
+- nonResourceURLs:
+      - '*'
+  verbs:
+      - get
+- apiGroups: ["batch"]
+  resources:
+    - "jobs"
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["extensions"]
+  resources:
+    - daemonsets
+    - daemonsets/status
+    - deployments
+    - deployments/scale
+    - deployments/status
+    - horizontalpodautoscalers
+    - horizontalpodautoscalers/status
+    - ingresses
+    - ingresses/status
+    - jobs
+    - jobs/status
+    - networkpolicies
+    - podsecuritypolicies
+    - replicasets
+    - replicasets/scale
+    - replicasets/status
+    - replicationcontrollers
+    - replicationcontrollers/scale
+    - storageclasses
+    - thirdpartyresources
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources:
+    - bindings
+    - componentstatuses
+    - configmaps
+    - endpoints
+    - events
+    - limitranges
+    - namespaces
+    - namespaces/status
+    - nodes
+    - nodes/status
+    - persistentvolumeclaims
+    - persistentvolumeclaims/status
+    - persistentvolumes
+    - persistentvolumes/status
+    - pods
+    - pods/binding
+    - pods/eviction
+    - pods/log
+    - pods/status
+    - podtemplates
+    - replicationcontrollers
+    - replicationcontrollers/scale
+    - replicationcontrollers/status
+    - resourcequotas
+    - resourcequotas/status
+    - securitycontextconstraints
+    - serviceaccounts
+    - services
+    - services/status
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - apps
+  resources:
+    - controllerrevisions
+    - daemonsets
+    - daemonsets/status
+    - deployments
+    - deployments/scale
+    - deployments/status
+    - replicasets
+    - replicasets/scale
+    - replicasets/status
+    - statefulsets
+    - statefulsets/scale
+    - statefulsets/status
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+  - apiextensions.k8s.io
+  resources:
+    - customresourcedefinitions
+    - customresourcedefinitions/status
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+    - apiservices
+    - apiservices/status
+  verbs:
+    - get
+    - list
+    - watch
+- apiGroups:
+  - events.k8s.io
+  resources:
+    - events
+  verbs:
+    - get
+    - list
+    - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cluster-reader-role-binding
+subjects:
+- kind: ServiceAccount
+  name: appd-cluster-reader
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: appd-cluster-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: sim-k8s-agent
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      name: appdynamics
+  template:
+    metadata:
+      labels:
+        name: appdynamics
+    spec:
+      serviceAccountName: appd-cluster-reader
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      hostNetwork: true
+      containers:
+        - name: sim-k8s-agent
+          image: localhost:5000/appd-k8s-ma
+          env:
+          - name: APPDYNAMICS_CONTROLLER_HOST_NAME
+            valueFrom:
+              secretKeyRef:
+                name: appd
+                key: APPDYNAMICS_CONTROLLER_HOST_NAME
+          - name: APPDYNAMICS_AGENT_ACCOUNT_NAME
+            valueFrom:
+              secretKeyRef:
+                name: appd
+                key: APPDYNAMICS_AGENT_ACCOUNT_NAME
+          - name: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: appd
+                key: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
+          - name: APPDYNAMICS_CONTROLLER_PORT
+            value: "443"
+          - name: APPDYNAMICS_CONTROLLER_SSL_ENABLED
+            value: "true"
+          - name: APPDYNAMICS_SIM_ENABLED
+            value: "true"
+          - name: APPDYNAMICS_DOCKER_ENABLED
+            value: "true"
+          volumeMounts:
+          - mountPath: /hostroot
+            name: hostroot
+            readOnly: true
+          - mountPath: /var/run/docker.sock
+            name: docker-sock
+      volumes:
+        - name: hostroot
+          hostPath:
+            path: /
+            type: Directory
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
+            type: Socket
+      restartPolicy: Always
+---
